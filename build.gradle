@@ -1,0 +1,71 @@
+plugins {
+    id 'java'
+    id 'com.google.protobuf' version '0.9.6'
+}
+
+group = 'account'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+def grpcVersion = project.findProperty('grpcVersion') ?: '1.79.0'
+def protobufVersion = project.findProperty('protobufVersion') ?: '4.31.1'
+def junitVersion = project.findProperty('junitVersion') ?: '5.10.2'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    implementation "io.grpc:grpc-netty-shaded:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "com.google.protobuf:protobuf-java:${protobufVersion}"
+
+    implementation "io.rest-assured:rest-assured:5.5.1"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.18.2"
+    implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2"
+    implementation "org.slf4j:slf4j-api:2.0.17"
+
+    compileOnly "org.apache.tomcat:annotations-api:6.0.53"
+
+    testImplementation "org.awaitility:awaitility:4.2.2"
+    testImplementation "org.assertj:assertj-core:3.27.3"
+    testImplementation platform("org.junit:junit-bom:${junitVersion}")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+
+    testRuntimeOnly "ch.qos.logback:logback-classic:1.5.18"
+}
+
+test {
+    useJUnitPlatform()
+    systemProperty "grpc.host", System.getProperty("grpc.host", "185.185.143.231")
+    systemProperty "grpc.port", System.getProperty("grpc.port", "5055")
+    systemProperty "grpc.login", System.getProperty("grpc.login", "")
+    systemProperty "grpc.password", System.getProperty("grpc.password", "")
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+    plugins {
+        grpc {
+            artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}"
+        }
+    }
+    generateProtoTasks {
+        all().configureEach { task ->
+            task.builtins {
+                java {}
+            }
+            task.plugins {
+                grpc {}
+            }
+        }
+    }
+}
