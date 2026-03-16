@@ -1,27 +1,23 @@
 package account.tests;
 
-import account.LoginRequest;
-import account.assertions.GrpcAssertions;
 import account.base.BaseGrpcTest;
+import account.assertions.GrpcAssertions;
 import account.model.TestUser;
+import account.support.TestDataGenerator;
 import io.grpc.Status;
 import org.junit.jupiter.api.Test;
 
 public class LoginNegativeTest extends BaseGrpcTest {
 
     @Test
-    void loginShouldReturnUnauthenticatedForWrongPassword() {
+    void loginShouldReturnFailedPreconditionForWrongPassword() {
         TestUser user = userFlowSteps.registerActivateAndLogin();
-
-        LoginRequest request = LoginRequest.newBuilder()
-                .setLogin(user.login())
-                .setPassword("wrong_password")
-                .setRememberMe(true)
-                .build();
 
         GrpcAssertions.assertGrpcStatus(
                 Status.Code.FAILED_PRECONDITION,
-                () -> blockingStub.login(request)
+                () -> blockingStub.login(
+                        user.toLoginRequestWithPassword(TestDataGenerator.wrongPassword(), true)
+                )
         );
     }
 }

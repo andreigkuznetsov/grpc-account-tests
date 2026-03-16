@@ -1,19 +1,20 @@
 package account.tests;
 
 import account.ChangeAccountPasswordRequest;
-import account.assertions.GrpcAssertions;
 import account.base.BaseGrpcTest;
+import account.assertions.GrpcAssertions;
+import account.support.TestDataGenerator;
 import io.grpc.Status;
 import org.junit.jupiter.api.Test;
 
 public class ChangeAccountPasswordNegativeTest extends BaseGrpcTest {
 
     @Test
-    void changeAccountPasswordShouldReturnInvalidArgumentForBadToken() {
+    void changeAccountPasswordShouldReturnInvalidArgumentForInvalidCredentials() {
         ChangeAccountPasswordRequest request = ChangeAccountPasswordRequest.newBuilder()
-                .setLogin("unknown_user")
-                .setOldPassword("")
-                .setNewPassword("NewQwerty123!")
+                .setLogin(TestDataGenerator.unknownUserLogin())
+                .setOldPassword(TestDataGenerator.emptyPassword())
+                .setNewPassword(TestDataGenerator.newPassword())
                 .build();
 
         GrpcAssertions.assertGrpcStatus(

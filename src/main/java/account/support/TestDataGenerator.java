@@ -1,33 +1,104 @@
 package account.support;
 
-import java.util.UUID;
+import com.github.javafaker.Faker;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
 
 public final class TestDataGenerator {
+
+    private static final Faker FAKER = new Faker(new Locale("en"), new Random());
+
+    private static final List<String> STATUSES = List.of(
+            "ACTIVE",
+            "BLOCKED",
+            "PENDING",
+            "DISABLED"
+    );
 
     private TestDataGenerator() {
     }
 
     public static String randomLogin() {
-        return "autotest_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        return normalizeLogin(FAKER.name().username() + FAKER.number().digits(4));
     }
 
     public static String randomEmail() {
-        return UUID.randomUUID().toString().replace("-", "").substring(0, 12) + "@mail.test";
+        return FAKER.internet().emailAddress();
     }
 
     public static String randomPassword() {
-        return "Qwerty123!" + UUID.randomUUID().toString().replace("-", "").substring(0, 6);
-    }
-
-    public static String randomStatus() {
-        return "status_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        return FAKER.internet().password(8, 16, true, true, true);
     }
 
     public static String randomName() {
-        return "name_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        return FAKER.name().fullName();
     }
 
     public static String randomLocation() {
-        return "location_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        return FAKER.address().city();
+    }
+
+    public static String randomStatus() {
+        return STATUSES.get(FAKER.random().nextInt(STATUSES.size()));
+    }
+
+    public static String unknownLogin() {
+        return "unknown_" + FAKER.number().digits(8);
+    }
+
+    public static String randomToken() {
+        return FAKER.regexify("[A-Za-z0-9]{32}");
+    }
+
+    public static String invalidActivationToken() {
+        return "invalid_" + FAKER.regexify("[A-Za-z0-9]{12}");
+    }
+
+    public static String invalidAuthToken() {
+        return "bad_token_" + FAKER.regexify("[A-Za-z0-9]{10}");
+    }
+
+    public static String invalidLogin() {
+        return "";
+    }
+
+    public static String invalidEmail() {
+        return FAKER.lorem().word();
+    }
+
+    public static String invalidPassword() {
+        return FAKER.lorem().word();
+    }
+
+    private static String normalizeLogin(String rawLogin) {
+        return rawLogin
+                .toLowerCase()
+                .replaceAll("[^a-z0-9_]", "");
+    }
+
+    public static String wrongPassword() {
+        return "wrong_" + FAKER.internet().password(8, 16, true, true, true);
+    }
+
+    public static String newEmailFrom(String oldEmail) {
+        return "new_" + oldEmail;
+    }
+
+    public static String newEmail() {
+        return "new_" + FAKER.internet().emailAddress();
+    }
+
+    public static String unknownUserLogin() {
+        return "unknown_" + FAKER.number().digits(8);
+    }
+
+    public static String emptyPassword() {
+        return "";
+    }
+
+    public static String newPassword() {
+        return "new_" + FAKER.internet().password(8, 16, true, true, true);
     }
 }

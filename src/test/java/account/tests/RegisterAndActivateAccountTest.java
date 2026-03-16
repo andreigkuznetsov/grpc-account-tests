@@ -7,7 +7,7 @@ import account.LoginResponse;
 import account.RegisterAccountRequest;
 import account.RegisterAccountResponse;
 import account.base.BaseGrpcTest;
-import account.support.TestDataGenerator;
+import account.model.TestUser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,23 +16,21 @@ public class RegisterAndActivateAccountTest extends BaseGrpcTest {
 
     @Test
     void registerActivateAndLoginShouldSucceed() {
-        String login = TestDataGenerator.randomLogin();
-        String email = TestDataGenerator.randomEmail();
-        String password = TestDataGenerator.randomPassword();
+        TestUser user = TestUser.random();
 
         RegisterAccountRequest registerRequest = RegisterAccountRequest.newBuilder()
-                .setLogin(login)
-                .setEmail(email)
-                .setPassword(password)
+                .setLogin(user.login())
+                .setEmail(user.email())
+                .setPassword(user.password())
                 .build();
 
         RegisterAccountResponse registerResponse = blockingStub.registerAccount(registerRequest);
 
         assertNotNull(registerResponse);
         assertFalse(registerResponse.getId().isBlank());
-        assertEquals(login, registerResponse.getLogin());
+        assertEquals(user.login(), registerResponse.getLogin());
 
-        String activationToken = mailSteps.waitForActivationToken(login);
+        String activationToken = mailSteps.waitForActivationToken(user.login());
 
         ActivateAccountRequest activateRequest = ActivateAccountRequest.newBuilder()
                 .setActivationToken(activationToken)
@@ -43,11 +41,11 @@ public class RegisterAndActivateAccountTest extends BaseGrpcTest {
         assertNotNull(activateResponse);
         assertTrue(activateResponse.hasUser());
         assertTrue(activateResponse.getUser().hasResource());
-        assertEquals(login, activateResponse.getUser().getResource().getLogin());
+        assertEquals(user.login(), activateResponse.getUser().getResource().getLogin());
 
         LoginRequest loginRequest = LoginRequest.newBuilder()
-                .setLogin(login)
-                .setPassword(password)
+                .setLogin(user.login())
+                .setPassword(user.password())
                 .setRememberMe(true)
                 .build();
 
@@ -57,6 +55,6 @@ public class RegisterAndActivateAccountTest extends BaseGrpcTest {
         assertFalse(loginResponse.getToken().isBlank());
         assertTrue(loginResponse.hasUser());
         assertTrue(loginResponse.getUser().hasResource());
-        assertEquals(login, loginResponse.getUser().getResource().getLogin());
+        assertEquals(user.login(), loginResponse.getUser().getResource().getLogin());
     }
 }

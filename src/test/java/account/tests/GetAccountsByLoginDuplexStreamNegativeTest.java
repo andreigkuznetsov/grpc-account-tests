@@ -2,15 +2,14 @@ package account.tests;
 
 import account.GetAccountsByLoginRequest;
 import account.GetAccountsByLoginResponse;
+import account.assertions.GrpcStreamAssertions;
 import account.base.BaseGrpcTest;
+import account.support.GrpcTestStreamObserver;
+import account.support.TestDataGenerator;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,31 +17,12 @@ public class GetAccountsByLoginDuplexStreamNegativeTest extends BaseGrpcTest {
 
     @Test
     void getAccountsByLoginDuplexStreamShouldReturnBusinessErrorForUnknownLogin() throws InterruptedException {
-        String unknownLogin = "unknown_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        String unknownLogin = TestDataGenerator.unknownLogin();
 
-        List<GetAccountsByLoginResponse> responses = new ArrayList<>();
-        CountDownLatch latch = new CountDownLatch(1);
-
-        StreamObserver<GetAccountsByLoginResponse> responseObserver = new StreamObserver<>() {
-            @Override
-            public void onNext(GetAccountsByLoginResponse value) {
-                responses.add(value);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                latch.countDown();
-                fail(t);
-            }
-
-            @Override
-            public void onCompleted() {
-                latch.countDown();
-            }
-        };
+        GrpcTestStreamObserver<GetAccountsByLoginResponse> responseObserver = new GrpcTestStreamObserver<>();
 
         StreamObserver<GetAccountsByLoginRequest> requestObserver =
-                asyncStub.getAccountsByLoginDuplexStream(responseObserver);
+                streamSteps.openGetAccountsByLoginDuplexStream(responseObserver);
 
         requestObserver.onNext(
                 GetAccountsByLoginRequest.newBuilder()
@@ -51,12 +31,14 @@ public class GetAccountsByLoginDuplexStreamNegativeTest extends BaseGrpcTest {
         );
         requestObserver.onCompleted();
 
-        boolean completed = latch.await(10, TimeUnit.SECONDS);
+        assertTrue(responseObserver.await(), "Bidi stream should complete");
 
-        assertTrue(completed, "Bidi stream should complete");
-        assertFalse(responses.isEmpty(), "Bidi stream should return at least one response");
-
-        GetAccountsByLoginResponse firstResponse = responses.getFirst();
+        GetAccountsByLoginResponse firstResponse = GrpcStreamAssertions.assertAtLeastOneResponseAndReturnFirst(
+                responseObserver,
+                "Bidi stream should not fail with transport error",
+                "Bidi stream should complete successfully",
+                "Bidi stream should return at least one response"
+        );
 
         assertEquals(unknownLogin, firstResponse.getLogin());
         assertTrue(firstResponse.hasError(), "Response should contain business error");

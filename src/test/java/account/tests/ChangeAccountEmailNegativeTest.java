@@ -6,17 +6,18 @@ import account.base.BaseGrpcTest;
 import account.model.TestUser;
 import io.grpc.Status;
 import org.junit.jupiter.api.Test;
+import account.support.TestDataGenerator;
 
 public class ChangeAccountEmailNegativeTest extends BaseGrpcTest {
 
     @Test
-    void changeAccountEmailShouldReturnUnauthenticatedForWrongPassword() {
+    void changeAccountEmailShouldReturnInvalidArgumentForWrongPassword() {
         TestUser user = userFlowSteps.registerActivateAndLogin();
 
         ChangeAccountEmailRequest request = ChangeAccountEmailRequest.newBuilder()
                 .setLogin(user.login())
-                .setPassword("wrong_password")
-                .setEmail("new_" + user.email())
+                .setPassword(TestDataGenerator.wrongPassword())
+                .setEmail(TestDataGenerator.newEmailFrom(user.email()))
                 .build();
 
         GrpcAssertions.assertGrpcStatus(

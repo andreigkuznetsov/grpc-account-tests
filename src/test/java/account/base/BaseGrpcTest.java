@@ -4,6 +4,7 @@ import account.AccountServiceGrpc;
 import account.client.AccountClient;
 import account.core.TestConfig;
 import account.steps.MailSteps;
+import account.steps.StreamSteps;
 import account.steps.UserFlowSteps;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,7 @@ public abstract class BaseGrpcTest {
 
     protected MailSteps mailSteps;
     protected UserFlowSteps userFlowSteps;
+    protected StreamSteps streamSteps;
 
     @BeforeEach
     void setUpBase() {
@@ -28,6 +30,7 @@ public abstract class BaseGrpcTest {
 
         mailSteps = new MailSteps();
         userFlowSteps = new UserFlowSteps(blockingStub, mailSteps);
+        streamSteps = new StreamSteps(asyncStub);
     }
 
     @AfterEach

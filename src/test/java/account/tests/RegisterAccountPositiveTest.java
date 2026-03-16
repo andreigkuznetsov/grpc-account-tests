@@ -3,7 +3,7 @@ package account.tests;
 import account.RegisterAccountRequest;
 import account.RegisterAccountResponse;
 import account.base.BaseGrpcTest;
-import account.support.TestDataGenerator;
+import account.model.TestUser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,20 +12,18 @@ public class RegisterAccountPositiveTest extends BaseGrpcTest {
 
     @Test
     void registerAccountShouldCreateNewUser() {
-        String login = TestDataGenerator.randomLogin();
-        String email = TestDataGenerator.randomEmail();
-        String password = TestDataGenerator.randomPassword();
+        TestUser user = TestUser.random();
 
         RegisterAccountRequest request = RegisterAccountRequest.newBuilder()
-                .setLogin(login)
-                .setEmail(email)
-                .setPassword(password)
+                .setLogin(user.login())
+                .setEmail(user.email())
+                .setPassword(user.password())
                 .build();
 
         RegisterAccountResponse response = blockingStub.registerAccount(request);
 
         assertNotNull(response);
         assertFalse(response.getId().isBlank());
-        assertEquals(login, response.getLogin());
+        assertEquals(user.login(), response.getLogin());
     }
 }

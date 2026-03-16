@@ -2,15 +2,12 @@ package account.tests;
 
 import account.GetAccountsByLoginRequest;
 import account.GetAccountsByLoginResponse;
+import account.assertions.GrpcStreamAssertions;
 import account.base.BaseGrpcTest;
 import account.model.TestUser;
+import account.support.GrpcTestStreamObserver;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,29 +17,10 @@ public class GetAccountsByLoginDuplexStreamPositiveTest extends BaseGrpcTest {
     void getAccountsByLoginDuplexStreamShouldReturnUserForExistingLogin() throws InterruptedException {
         TestUser user = userFlowSteps.registerActivateAndLogin();
 
-        List<GetAccountsByLoginResponse> responses = new ArrayList<>();
-        CountDownLatch latch = new CountDownLatch(1);
-
-        StreamObserver<GetAccountsByLoginResponse> responseObserver = new StreamObserver<>() {
-            @Override
-            public void onNext(GetAccountsByLoginResponse value) {
-                responses.add(value);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                latch.countDown();
-                fail(t);
-            }
-
-            @Override
-            public void onCompleted() {
-                latch.countDown();
-            }
-        };
+        GrpcTestStreamObserver<GetAccountsByLoginResponse> responseObserver = new GrpcTestStreamObserver<>();
 
         StreamObserver<GetAccountsByLoginRequest> requestObserver =
-                asyncStub.getAccountsByLoginDuplexStream(responseObserver);
+                streamSteps.openGetAccountsByLoginDuplexStream(responseObserver);
 
         requestObserver.onNext(
                 GetAccountsByLoginRequest.newBuilder()
@@ -51,12 +29,14 @@ public class GetAccountsByLoginDuplexStreamPositiveTest extends BaseGrpcTest {
         );
         requestObserver.onCompleted();
 
-        boolean completed = latch.await(10, TimeUnit.SECONDS);
+        assertTrue(responseObserver.await(), "Bidi stream should complete");
 
-        assertTrue(completed, "Bidi stream should complete");
-        assertFalse(responses.isEmpty(), "Bidi stream should return at least one response");
-
-        GetAccountsByLoginResponse firstResponse = responses.get(0);
+        GetAccountsByLoginResponse firstResponse = GrpcStreamAssertions.assertAtLeastOneResponseAndReturnFirst(
+                responseObserver,
+                "Bidi stream should not fail with transport error",
+                "Bidi stream should complete successfully",
+                "Bidi stream should return at least one response"
+        );
 
         assertEquals(user.login(), firstResponse.getLogin());
         assertTrue(firstResponse.hasUser(), "Response should contain user");

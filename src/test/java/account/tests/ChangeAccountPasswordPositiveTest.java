@@ -32,7 +32,7 @@ public class ChangeAccountPasswordPositiveTest extends BaseGrpcTest {
         ChangeAccountPasswordRequest request = ChangeAccountPasswordRequest.newBuilder()
                 .setLogin(user.login())
                 .setToken(StringValue.of(resetToken))
-                .setOldPassword("")
+                .setOldPassword(TestDataGenerator.emptyPassword())
                 .setNewPassword(newPassword)
                 .build();
 

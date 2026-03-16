@@ -13,12 +13,12 @@ public class GetAccountsServerStreamPositiveTest extends BaseGrpcTest {
 
     @Test
     void getAccountsServerStreamShouldReturnAtLeastOneUser() {
-        Iterator<User> iterator = blockingStub.getAccountsServerStream(Empty.getDefaultInstance());
+        Iterator<User> users = blockingStub.getAccountsServerStream(Empty.getDefaultInstance());
 
-        assertNotNull(iterator);
-        assertTrue(iterator.hasNext(), "Server stream should return at least one user");
+        assertNotNull(users);
+        assertTrue(users.hasNext(), "Server stream should return at least one user");
 
-        User firstUser = iterator.next();
+        User firstUser = users.next();
 
         assertNotNull(firstUser);
         assertFalse(firstUser.getLogin().isBlank(), "Returned user login should not be blank");

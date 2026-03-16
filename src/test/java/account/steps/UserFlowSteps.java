@@ -8,15 +8,12 @@ import account.LoginResponse;
 import account.RegisterAccountRequest;
 import account.RegisterAccountResponse;
 import account.model.TestUser;
-import account.support.TestDataGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Slf4j
 public class UserFlowSteps {
-
-    private static final Logger log = LoggerFactory.getLogger(UserFlowSteps.class);
 
     private final AccountServiceGrpc.AccountServiceBlockingStub blockingStub;
     private final MailSteps mailSteps;
@@ -27,63 +24,61 @@ public class UserFlowSteps {
     }
 
     public TestUser registerActivateAndLogin() {
-        String login = TestDataGenerator.randomLogin();
-        String email = TestDataGenerator.randomEmail();
-        String password = TestDataGenerator.randomPassword();
+        TestUser user = TestUser.random();
 
         log.info("Starting user flow: register -> activate -> login");
-        log.info("Generated test user: login={}, email={}", login, email);
+        log.info("Generated test user: login={}, email={}", user.login(), user.email());
 
         RegisterAccountRequest registerRequest = RegisterAccountRequest.newBuilder()
-                .setLogin(login)
-                .setEmail(email)
-                .setPassword(password)
+                .setLogin(user.login())
+                .setEmail(user.email())
+                .setPassword(user.password())
                 .build();
 
-        log.info("Calling RegisterAccount for login={}", login);
+        log.info("Calling RegisterAccount for login={}", user.login());
         RegisterAccountResponse registerResponse = blockingStub.registerAccount(registerRequest);
 
         assertNotNull(registerResponse);
         assertFalse(registerResponse.getId().isBlank());
-        assertEquals(login, registerResponse.getLogin());
+        assertEquals(user.login(), registerResponse.getLogin());
 
         log.info("RegisterAccount success: id={}, login={}", registerResponse.getId(), registerResponse.getLogin());
 
-        log.info("Waiting for activation token for login={}", login);
-        String activationToken = mailSteps.waitForActivationToken(login);
-        log.info("Activation token received for login={}", login);
+        log.info("Waiting for activation token for login={}", user.login());
+        String activationToken = mailSteps.waitForActivationToken(user.login());
+        log.info("Activation token received for login={}", user.login());
 
         ActivateAccountRequest activateRequest = ActivateAccountRequest.newBuilder()
                 .setActivationToken(activationToken)
                 .build();
 
-        log.info("Calling ActivateAccount for login={}", login);
+        log.info("Calling ActivateAccount for login={}", user.login());
         ActivateAccountResponse activateResponse = blockingStub.activateAccount(activateRequest);
 
         assertNotNull(activateResponse);
         assertTrue(activateResponse.hasUser());
         assertTrue(activateResponse.getUser().hasResource());
-        assertEquals(login, activateResponse.getUser().getResource().getLogin());
+        assertEquals(user.login(), activateResponse.getUser().getResource().getLogin());
 
-        log.info("ActivateAccount success for login={}", login);
+        log.info("ActivateAccount success for login={}", user.login());
 
         LoginRequest loginRequest = LoginRequest.newBuilder()
-                .setLogin(login)
-                .setPassword(password)
+                .setLogin(user.login())
+                .setPassword(user.password())
                 .setRememberMe(true)
                 .build();
 
-        log.info("Calling Login for login={}", login);
+        log.info("Calling Login for login={}", user.login());
         LoginResponse loginResponse = blockingStub.login(loginRequest);
 
         assertNotNull(loginResponse);
         assertFalse(loginResponse.getToken().isBlank());
         assertTrue(loginResponse.hasUser());
         assertTrue(loginResponse.getUser().hasResource());
-        assertEquals(login, loginResponse.getUser().getResource().getLogin());
+        assertEquals(user.login(), loginResponse.getUser().getResource().getLogin());
 
-        log.info("Login success for login={}, token received", login);
+        log.info("Login success for login={}, token received", user.login());
 
-        return new TestUser(login, email, password, loginResponse.getToken());
+        return user.withToken(loginResponse.getToken());
     }
 }
