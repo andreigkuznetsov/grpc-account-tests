@@ -1,4 +1,3 @@
-
 # gRPC Account API Automation Framework
 
 Автоматизированный тестовый фреймворк для тестирования **gRPC API пользовательских аккаунтов**.
@@ -156,20 +155,67 @@ src
 
 ---
 
-# 🔐 Пример пользовательского сценария
+# 🔐 Streaming RPC flows
 
-### Регистрация пользователя
+### User flow диаграмма: register → activate → login
 
+```mermaid
+sequenceDiagram
+    participant T as Test
+    participant S as gRPC Service
+    participant M as Mail Service
+
+    T->>S: RegisterAccount(login, email, password)
+    S-->>T: register response
+    T->>M: waitForActivationToken(login)
+    M-->>T: activation token
+    T->>S: ActivateAccount(token)
+    S-->>T: activated user
+    T->>S: Login(login, password)
+    S-->>T: auth token + user
 ```
-registerAccount
-     ↓
-получение письма
-     ↓
-извлечение activationToken
-     ↓
-activateAccount
-     ↓
-login
+
+### Streaming RPC flow (Bidirectional Stream)
+
+```mermaid
+sequenceDiagram
+    participant T as Test
+    participant S as gRPC Service
+
+    T->>S: open bidi stream
+    T->>S: send GetAccountsByLoginRequest(login)
+    S-->>T: stream GetAccountsByLoginResponse
+    S-->>T: stream next response
+    T->>S: complete stream
+    S-->>T: stream completed
+```
+
+### Client Streaming flow (пример registerAccountClientStream)
+
+```mermaid
+sequenceDiagram
+    participant T as Test
+    participant S as gRPC Service
+
+    T->>S: open client stream
+    T->>S: send RegisterAccountRequest #1
+    T->>S: send RegisterAccountRequest #2
+    T->>S: complete stream
+    S-->>T: RegisterAccountClientStreamResponse(results)
+```
+
+### Server Streaming flow
+
+```mermaid
+sequenceDiagram
+    participant T as Test
+    participant S as gRPC Service
+
+    T->>S: getAccountsServerStream()
+    S-->>T: User #1
+    S-->>T: User #2
+    S-->>T: User #3
+    S-->>T: stream completed
 ```
 
 ---
