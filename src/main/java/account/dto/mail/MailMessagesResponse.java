@@ -1,9 +1,13 @@
 package account.dto.mail;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+@Getter
+@NoArgsConstructor
 public class MailMessagesResponse {
 
     private Integer total;
@@ -11,22 +15,8 @@ public class MailMessagesResponse {
     private Integer start;
     private List<MailItem> items;
 
-    public Integer getTotal() {
-        return total;
-    }
-
-    public Integer getCount() {
-        return count;
-    }
-
-    public Integer getStart() {
-        return start;
-    }
-
-    public List<MailItem> getItems() {
-        return items;
-    }
-
+    @Getter
+    @NoArgsConstructor
     public static class MailItem {
 
         @JsonProperty("ID")
@@ -37,27 +27,13 @@ public class MailMessagesResponse {
 
         @JsonProperty("Content")
         private Content content;
-
-        public String getId() {
-            return id;
-        }
-
-        public String getCreated() {
-            return created;
-        }
-
-        public Content getContent() {
-            return content;
-        }
     }
 
+    @Getter
+    @NoArgsConstructor
     public static class Content {
 
         @JsonProperty("Body")
         private String body;
-
-        public String getBody() {
-            return body;
-        }
     }
 }

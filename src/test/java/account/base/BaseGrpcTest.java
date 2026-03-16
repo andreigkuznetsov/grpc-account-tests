@@ -10,19 +10,22 @@ import org.junit.jupiter.api.BeforeEach;
 
 public abstract class BaseGrpcTest {
 
-    protected TestConfig config;
     protected AccountClient client;
     protected AccountServiceGrpc.AccountServiceBlockingStub blockingStub;
     protected AccountServiceGrpc.AccountServiceStub asyncStub;
+
     protected MailSteps mailSteps;
     protected UserFlowSteps userFlowSteps;
 
     @BeforeEach
     void setUpBase() {
-        config = TestConfig.fromSystemProperties();
-        client = new AccountClient(config.host(), config.port());
-        blockingStub = client.blockingStub();
-        asyncStub = client.asyncStub();
+        TestConfig config = TestConfig.fromSystemProperties();
+
+        client = new AccountClient(config.getHost(), config.getPort());
+
+        blockingStub = client.getBlockingStub();
+        asyncStub = client.getAsyncStub();
+
         mailSteps = new MailSteps();
         userFlowSteps = new UserFlowSteps(blockingStub, mailSteps);
     }

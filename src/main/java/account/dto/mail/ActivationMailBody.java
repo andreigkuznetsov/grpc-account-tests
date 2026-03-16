@@ -1,7 +1,11 @@
 package account.dto.mail;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
 public class ActivationMailBody {
 
     @JsonProperty("Login")
@@ -9,12 +13,4 @@ public class ActivationMailBody {
 
     @JsonProperty("ConfirmationLinkUrl")
     private String confirmationLinkUrl;
-
-    public String getLogin() {
-        return login;
-    }
-
-    public String getConfirmationLinkUrl() {
-        return confirmationLinkUrl;
-    }
 }

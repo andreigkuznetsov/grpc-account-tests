@@ -1,7 +1,11 @@
 package account.dto.mail;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Getter
+@NoArgsConstructor
 public class ResetPasswordMailBody {
 
     @JsonProperty("Login")
@@ -9,12 +13,4 @@ public class ResetPasswordMailBody {
 
     @JsonProperty("ConfirmationLinkUri")
     private String confirmationLinkUri;
-
-    public String getLogin() {
-        return login;
-    }
-
-    public String getConfirmationLinkUri() {
-        return confirmationLinkUri;
-    }
 }

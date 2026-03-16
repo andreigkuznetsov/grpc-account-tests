@@ -3,12 +3,12 @@ package account.client;
 import account.AccountServiceGrpc;
 import account.core.GrpcChannelFactory;
 import io.grpc.ManagedChannel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
+@Getter
 public class AccountClient {
-
-    private static final Logger log = LoggerFactory.getLogger(AccountClient.class);
 
     private final ManagedChannel channel;
     private final AccountServiceGrpc.AccountServiceBlockingStub blockingStub;
@@ -22,14 +22,6 @@ public class AccountClient {
         this.asyncStub = AccountServiceGrpc.newStub(channel);
 
         log.info("gRPC client initialized");
-    }
-
-    public AccountServiceGrpc.AccountServiceBlockingStub blockingStub() {
-        return blockingStub;
-    }
-
-    public AccountServiceGrpc.AccountServiceStub asyncStub() {
-        return asyncStub;
     }
 
     public void shutdown() {
