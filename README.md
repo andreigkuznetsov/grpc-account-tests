@@ -1,1 +1,356 @@
-# grpc-account-tests
+# gRPC Account API Automation Framework
+
+Автоматизированный тестовый фреймворк для тестирования **gRPC API пользовательских аккаунтов**.
+
+Проект демонстрирует архитектуру **масштабируемого automation framework для тестирования gRPC сервисов**, включая:
+
+- Unary RPC
+- Server Streaming
+- Client Streaming
+- Bidirectional Streaming
+- бизнес‑ошибки и gRPC статусы
+- сценарии с email‑подтверждениями
+
+Фреймворк спроектирован так, чтобы быть максимально похожим на **production automation framework**, применяемый для тестирования backend‑сервисов.
+
+---
+
+# 🎯 Цель проекта
+
+Основная цель проекта — продемонстрировать:
+
+- архитектуру **gRPC automation framework**
+- тестирование **Unary / Server Stream / Client Stream / Bidi Stream**
+- автоматизацию пользовательских сценариев
+- тестирование **gRPC статусов и бизнес‑ошибок**
+- читаемые **бизнес‑ориентированные тесты**
+- масштабируемую структуру тестового проекта
+
+---
+
+# ⚙️ Технологический стек
+
+| Технология | Назначение |
+|---|---|
+| Java 21 | основной язык |
+| Gradle | система сборки |
+| gRPC Java | клиент для gRPC сервисов |
+| Protocol Buffers | описание API |
+| JUnit 5 | тестовый фреймворк |
+| SLF4J | abstraction логирования |
+| Logback | backend логирования |
+| Java Faker | генерация тестовых данных |
+
+---
+
+# 🧠 Архитектурные принципы
+
+Фреймворк построен на нескольких ключевых принципах.
+
+## Разделение ответственности
+
+Каждый слой отвечает только за свою задачу.
+
+```
+Tests
+  ↓
+Steps
+  ↓
+Client
+  ↓
+gRPC Service
+```
+
+Это позволяет:
+
+- уменьшить дублирование кода
+- улучшить читаемость тестов
+- упростить поддержку проекта
+
+---
+
+# 🏗 Архитектурная диаграмма
+
+```
+                  ┌─────────────────────┐
+                  │        Tests        │
+                  │ JUnit Test classes  │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │        Steps        │
+                  │ UserFlowSteps       │
+                  │ MailSteps           │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │        Client       │
+                  │    AccountClient    │
+                  │   gRPC channel      │
+                  └──────────┬──────────┘
+                             │
+                             ▼
+                  ┌─────────────────────┐
+                  │     gRPC Service    │
+                  │  AccountService     │
+                  └─────────────────────┘
+```
+
+---
+
+# 📦 Структура проекта
+
+Пример структуры проекта:
+
+```
+src
+ └── test
+      └── java
+           └── account
+                ├── assertions
+                │     └── GrpcAssertions
+                │
+                ├── base
+                │     └── BaseGrpcTest
+                │
+                ├── client
+                │     └── AccountClient
+                │
+                ├── model
+                │     ├── TestUser
+                │     └── AccountUpdateData
+                │
+                ├── steps
+                │     ├── UserFlowSteps
+                │     └── MailSteps
+                │
+                ├── support
+                │     └── TestDataGenerator
+                │
+                └── tests
+                      ├── RegisterAccountPositiveTest
+                      ├── LoginNegativeTest
+                      ├── GetCurrentAccountPositiveTest
+                      ├── ChangeAccountPasswordPositiveTest
+                      ├── RegisterAccountClientStreamPositiveTest
+                      └── GetAccountsByLoginDuplexStreamPositiveTest
+```
+
+---
+
+# 🧪 Типы тестируемых RPC
+
+Фреймворк покрывает все основные типы gRPC вызовов.
+
+| Тип RPC | Пример метода |
+|------|------|
+| Unary | registerAccount |
+| Unary | login |
+| Unary | getCurrentAccount |
+| Server Streaming | getAccountsServerStream |
+| Client Streaming | registerAccountClientStream |
+| Bidirectional Streaming | getAccountsByLoginDuplexStream |
+
+---
+
+# 🔐 Streaming RPC flows
+
+### User flow диаграмма: register → activate → login
+
+```mermaid
+sequenceDiagram
+    participant T as Test
+    participant S as gRPC Service
+    participant M as Mail Service
+
+    T->>S: RegisterAccount(login, email, password)
+    S-->>T: register response
+    T->>M: waitForActivationToken(login)
+    M-->>T: activation token
+    T->>S: ActivateAccount(token)
+    S-->>T: activated user
+    T->>S: Login(login, password)
+    S-->>T: auth token + user
+```
+
+### Streaming RPC flow (Bidirectional Stream)
+
+```mermaid
+sequenceDiagram
+    participant T as Test
+    participant S as gRPC Service
+
+    T->>S: open bidi stream
+    T->>S: send GetAccountsByLoginRequest(login)
+    S-->>T: stream GetAccountsByLoginResponse
+    S-->>T: stream next response
+    T->>S: complete stream
+    S-->>T: stream completed
+```
+
+### Client Streaming flow (пример registerAccountClientStream)
+
+```mermaid
+sequenceDiagram
+    participant T as Test
+    participant S as gRPC Service
+
+    T->>S: open client stream
+    T->>S: send RegisterAccountRequest #1
+    T->>S: send RegisterAccountRequest #2
+    T->>S: complete stream
+    S-->>T: RegisterAccountClientStreamResponse(results)
+```
+
+### Server Streaming flow
+
+```mermaid
+sequenceDiagram
+    participant T as Test
+    participant S as gRPC Service
+
+    T->>S: getAccountsServerStream()
+    S-->>T: User #1
+    S-->>T: User #2
+    S-->>T: User #3
+    S-->>T: stream completed
+```
+
+---
+
+# 🔄 Пример streaming теста
+
+Пример **bidirectional streaming теста**.
+
+```java
+@Test
+void getAccountsByLoginDuplexStreamShouldReturnUserForExistingLogin() {
+
+    TestUser user = userFlowSteps.registerActivateAndLogin();
+
+    var responses = asyncStub
+            .getAccountsByLoginDuplexStream()
+            .send(user.login())
+            .collect();
+
+    assertFalse(responses.isEmpty());
+
+    var response = responses.getFirst();
+
+    assertEquals(user.login(), response.getLogin());
+    assertTrue(response.hasUser());
+}
+```
+
+Этот тип теста проверяет:
+
+- bidirectional streaming RPC
+- корректность ответа сервиса
+- наличие пользователя в ответе
+
+---
+
+# 📊 Логирование
+
+Используется **SLF4J + Logback**.
+
+Логируются:
+
+- gRPC методы
+- параметры запроса
+- ответы сервиса
+- пользовательские сценарии
+
+Пример:
+
+```
+Starting user flow: register -> activate -> login
+Generated test user: login=user123, email=user@mail.test
+RegisterAccount success
+Activation token received
+Login success
+```
+
+Это значительно упрощает диагностику тестов.
+
+---
+
+# ▶️ Запуск тестов
+
+Запуск всех тестов:
+
+```
+gradle test
+```
+
+или
+
+```
+./gradlew test
+```
+
+---
+
+# 🔧 Параметры подключения
+
+Сервис можно настроить через system properties.
+
+```
+grpc.host
+grpc.port
+```
+
+Пример:
+
+```
+gradle test -Dgrpc.host=localhost -Dgrpc.port=5055
+```
+
+По умолчанию:
+
+```
+grpc.host=185.185.143.231
+grpc.port=5055
+```
+
+---
+
+# 🔮 Возможные улучшения
+
+Проект можно расширить:
+
+- Allure отчёты
+- CI/CD интеграция
+- Testcontainers
+- retry‑механизмы для flaky тестов
+- contract testing
+- нагрузочное тестирование API
+
+---
+
+# 💡 Что демонстрирует проект
+
+Этот проект демонстрирует навыки:
+
+- разработки automation framework
+- тестирования gRPC API
+- архитектуры тестов
+- автоматизации пользовательских сценариев
+- интеграционного тестирования backend‑сервисов
+
+---
+
+# 👤 Автор
+
+### Андрей Кузнецов
+
+QA Engineer / QA Automation Engineer
+
+Специализация:
+
+- API тестирование
+- Java automation
+- архитектура тестовых фреймворков
+- тестирование backend систем
