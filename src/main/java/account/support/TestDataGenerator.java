@@ -48,18 +48,6 @@ public final class TestDataGenerator {
         return "unknown_" + FAKER.number().digits(8);
     }
 
-    public static String randomToken() {
-        return FAKER.regexify("[A-Za-z0-9]{32}");
-    }
-
-    public static String invalidActivationToken() {
-        return "invalid_" + FAKER.regexify("[A-Za-z0-9]{12}");
-    }
-
-    public static String invalidAuthToken() {
-        return "bad_token_" + FAKER.regexify("[A-Za-z0-9]{10}");
-    }
-
     public static String invalidLogin() {
         return "";
     }
@@ -72,10 +60,12 @@ public final class TestDataGenerator {
         return FAKER.lorem().word();
     }
 
-    private static String normalizeLogin(String rawLogin) {
-        return rawLogin
-                .toLowerCase()
-                .replaceAll("[^a-z0-9_]", "");
+    public static String invalidActivationToken() {
+        return "invalid_" + FAKER.regexify("[A-Za-z0-9]{12}");
+    }
+
+    public static String invalidAuthToken() {
+        return "bad_token_" + FAKER.regexify("[A-Za-z0-9]{10}");
     }
 
     public static String wrongPassword() {
@@ -90,15 +80,17 @@ public final class TestDataGenerator {
         return "new_" + FAKER.internet().emailAddress();
     }
 
-    public static String unknownUserLogin() {
-        return "unknown_" + FAKER.number().digits(8);
-    }
-
     public static String emptyPassword() {
         return "";
     }
 
     public static String newPassword() {
         return "new_" + FAKER.internet().password(8, 16, true, true, true);
+    }
+
+    private static String normalizeLogin(String rawLogin) {
+        return rawLogin
+                .toLowerCase()
+                .replaceAll("[^a-z0-9_]", "");
     }
 }

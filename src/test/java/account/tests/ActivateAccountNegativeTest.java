@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class ActivateAccountNegativeTest extends BaseGrpcTest {
 
     @Test
-    void activateAccountShouldReturnInvalidArgumentForInvalidToken() {
+    void activateAccountShouldReturnInternalForInvalidToken() {
         ActivateAccountRequest request = ActivateAccountRequest.newBuilder()
                 .setActivationToken(TestDataGenerator.invalidActivationToken())
                 .build();

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class ResetAccountPasswordNegativeTest extends BaseGrpcTest {
 
     @Test
-    void resetAccountPasswordShouldReturnNotFoundForUnknownUser() {
+    void resetAccountPasswordShouldReturnInvalidArgumentForUnknownUser() {
         ResetAccountPasswordRequest request = ResetAccountPasswordRequest.newBuilder()
                 .setLogin(TestDataGenerator.unknownLogin())
                 .setEmail(TestDataGenerator.randomEmail())

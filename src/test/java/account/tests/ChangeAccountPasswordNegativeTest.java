@@ -12,7 +12,7 @@ public class ChangeAccountPasswordNegativeTest extends BaseGrpcTest {
     @Test
     void changeAccountPasswordShouldReturnInvalidArgumentForInvalidCredentials() {
         ChangeAccountPasswordRequest request = ChangeAccountPasswordRequest.newBuilder()
-                .setLogin(TestDataGenerator.unknownUserLogin())
+                .setLogin(TestDataGenerator.unknownLogin())
                 .setOldPassword(TestDataGenerator.emptyPassword())
                 .setNewPassword(TestDataGenerator.newPassword())
                 .build();

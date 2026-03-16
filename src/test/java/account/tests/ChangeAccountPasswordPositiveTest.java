@@ -18,7 +18,7 @@ public class ChangeAccountPasswordPositiveTest extends BaseGrpcTest {
     @Test
     void changeAccountPasswordShouldAllowLoginWithNewPassword() {
         TestUser user = userFlowSteps.registerActivateAndLogin();
-        String newPassword = TestDataGenerator.randomPassword();
+        String newPassword = TestDataGenerator.newPassword();
 
         blockingStub.resetAccountPassword(
                 ResetAccountPasswordRequest.newBuilder()

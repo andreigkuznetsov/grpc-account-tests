@@ -14,7 +14,7 @@ public class ChangeAccountEmailPositiveTest extends BaseGrpcTest {
     @Test
     void changeAccountEmailShouldUpdateEmailForExistingUser() {
         TestUser user = userFlowSteps.registerActivateAndLogin();
-        String newEmail = TestDataGenerator.randomEmail();
+        String newEmail = TestDataGenerator.newEmail();
 
         ChangeAccountEmailRequest request = ChangeAccountEmailRequest.newBuilder()
                 .setLogin(user.login())
