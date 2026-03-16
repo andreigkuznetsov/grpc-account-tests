@@ -93,4 +93,8 @@ public final class TestDataGenerator {
                 .toLowerCase()
                 .replaceAll("[^a-z0-9_]", "");
     }
+
+    public static String blankEmail() {
+        return "";
+    }
 }

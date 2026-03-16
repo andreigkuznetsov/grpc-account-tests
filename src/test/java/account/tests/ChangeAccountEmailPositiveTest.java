@@ -29,4 +29,23 @@ public class ChangeAccountEmailPositiveTest extends BaseGrpcTest {
         assertTrue(response.getUser().hasResource());
         assertEquals(user.login(), response.getUser().getResource().getLogin());
     }
+
+    @Test
+    void changeAccountEmailShouldAllowDuplicateEmail() {
+        TestUser firstUser = userFlowSteps.registerActivateAndLogin();
+        TestUser secondUser = userFlowSteps.registerActivateAndLogin();
+
+        ChangeAccountEmailRequest request = ChangeAccountEmailRequest.newBuilder()
+                .setLogin(secondUser.login())
+                .setPassword(secondUser.password())
+                .setEmail(firstUser.email())
+                .build();
+
+        ChangeAccountEmailResponse response = blockingStub.changeAccountEmail(request);
+
+        assertNotNull(response);
+        assertTrue(response.hasUser());
+        assertTrue(response.getUser().hasResource());
+        assertEquals(secondUser.login(), response.getUser().getResource().getLogin());
+    }
 }
