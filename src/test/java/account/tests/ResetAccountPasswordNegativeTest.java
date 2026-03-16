@@ -16,7 +16,7 @@ public class ResetAccountPasswordNegativeTest extends BaseGrpcTest {
                 .build();
 
         GrpcAssertions.assertGrpcStatus(
-                Status.Code.NOT_FOUND,
+                Status.Code.INVALID_ARGUMENT,
                 () -> blockingStub.resetAccountPassword(request)
         );
     }

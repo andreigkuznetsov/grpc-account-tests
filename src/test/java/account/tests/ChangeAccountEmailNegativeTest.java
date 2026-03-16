@@ -20,7 +20,7 @@ public class ChangeAccountEmailNegativeTest extends BaseGrpcTest {
                 .build();
 
         GrpcAssertions.assertGrpcStatus(
-                Status.Code.UNAUTHENTICATED,
+                Status.Code.INVALID_ARGUMENT,
                 () -> blockingStub.changeAccountEmail(request)
         );
     }

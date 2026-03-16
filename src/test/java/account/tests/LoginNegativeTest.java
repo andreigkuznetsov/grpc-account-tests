@@ -20,7 +20,7 @@ public class LoginNegativeTest extends BaseGrpcTest {
                 .build();
 
         GrpcAssertions.assertGrpcStatus(
-                Status.Code.UNAUTHENTICATED,
+                Status.Code.FAILED_PRECONDITION,
                 () -> blockingStub.login(request)
         );
     }

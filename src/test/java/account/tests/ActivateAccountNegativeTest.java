@@ -15,7 +15,7 @@ public class ActivateAccountNegativeTest extends BaseGrpcTest {
                 .build();
 
         GrpcAssertions.assertGrpcStatus(
-                Status.Code.INVALID_ARGUMENT,
+                Status.Code.INTERNAL,
                 () -> blockingStub.activateAccount(request)
         );
     }

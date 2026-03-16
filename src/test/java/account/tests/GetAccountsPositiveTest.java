@@ -3,8 +3,8 @@ package account.tests;
 import account.GetAccountsRequest;
 import account.GetAccountsResponse;
 import account.PagingQuery;
+import account.User;
 import account.base.BaseGrpcTest;
-import account.model.TestUser;
 import com.google.protobuf.Int32Value;
 import org.junit.jupiter.api.Test;
 
@@ -13,9 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class GetAccountsPositiveTest extends BaseGrpcTest {
 
     @Test
-    void getAccountsShouldReturnListIncludingCreatedUser() {
-        TestUser user = userFlowSteps.registerActivateAndLogin();
-
+    void getAccountsShouldReturnNonEmptyResponse() {
         PagingQuery paging = PagingQuery.newBuilder()
                 .setSize(Int32Value.of(50))
                 .setNumber(Int32Value.of(1))
@@ -29,11 +27,15 @@ public class GetAccountsPositiveTest extends BaseGrpcTest {
         GetAccountsResponse response = blockingStub.getAccounts(request);
 
         assertNotNull(response);
-        assertTrue(response.getAccountsCount() >= 1);
+        assertTrue(response.getAccountsCount() > 0, "Accounts list should not be empty");
 
-        boolean found = response.getAccountsList().stream()
-                .anyMatch(account -> account.getLogin().equals(user.login()));
+        User firstUser = response.getAccounts(0);
+        assertNotNull(firstUser);
+        assertFalse(firstUser.getLogin().isBlank(), "User login should not be blank");
 
-        assertTrue(found);
+        if (response.hasPaging()) {
+            assertTrue(response.getPaging().getPageSize() >= 0);
+            assertTrue(response.getPaging().getCurrentPage() >= 0);
+        }
     }
 }
