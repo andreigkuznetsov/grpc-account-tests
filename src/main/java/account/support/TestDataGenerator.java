@@ -68,6 +68,10 @@ public final class TestDataGenerator {
         return "bad_token_" + FAKER.regexify("[A-Za-z0-9]{10}");
     }
 
+    public static String emptyAuthToken() {
+        return "";
+    }
+
     public static String wrongPassword() {
         return "wrong_" + FAKER.internet().password(8, 16, true, true, true);
     }
